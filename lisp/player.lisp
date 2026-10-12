@@ -1,6 +1,7 @@
 (in-package #:squash-the-creeps)
 
-;;; The Player scene's code, from "Moving the player with code"
+;;; The Player scene's code, from "Moving the player with code" and "Jumping and
+;;; squashing monsters"
 
 ;; extends CharacterBody3D
 ;;
@@ -8,6 +9,8 @@
 ;; @export var speed = 14
 ;; # The downward acceleration when in the air, in meters per second squared.
 ;; @export var fall_acceleration = 75
+;; # Vertical impulse applied to the character upon jumping in meters per second.
+;; @export var jump_impulse = 20
 ;;
 ;; var target_velocity = Vector3.ZERO
 
@@ -17,6 +20,8 @@
    (speed 14 :export :int)
    ;; The downward acceleration when in the air, in meters per second squared.
    (fall-acceleration 75 :export :int)
+   ;; Vertical impulse applied to the character upon jumping in meters per second.
+   (jump-impulse 20 :export :int)
    (target-velocity (vector3))
    ;; The child node Pivot
    (pivot nil :onready "Pivot"))
@@ -51,6 +56,10 @@
 ;;     if not is_on_floor(): # If in the air, fall towards the floor. Literally gravity
 ;;         target_velocity.y = target_velocity.y - (fall_acceleration * delta)
 ;;
+;;     # Jumping.
+;;     if is_on_floor() and Input.is_action_just_pressed("jump"):
+;;         target_velocity.y = jump_impulse
+;;
 ;;     # Moving the Character
 ;;     velocity = target_velocity
 ;;     move_and_slide()
@@ -80,6 +89,9 @@
       (setf (vector3-y target-velocity)
             (float (- (vector3-y target-velocity) (* (player-fall-acceleration player) delta))
                    1.0)))
+    ;; Jumping.
+    (when (and (character-body-3d-is-on-floor player) (input-is-action-just-pressed "jump"))
+      (setf (vector3-y target-velocity) (float (player-jump-impulse player) 1.0)))
     ;; Moving the Character
     (character-body-3d-set-velocity player target-velocity)
     (character-body-3d-move-and-slide player)))
