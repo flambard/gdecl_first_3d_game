@@ -18,7 +18,14 @@
   (:method "initialize" mob-initialize
            :arguments (("start_position" :vector3) ("player_position" :vector3)))
   (:method "_on_visible_on_screen_notifier_3d_screen_exited"
-           mob-on-visible-on-screen-notifier-3d-screen-exited))
+           mob-on-visible-on-screen-notifier-3d-screen-exited)
+  (:virtual "_physics_process" mob-physics-process))
+
+;; func _physics_process(_delta):
+;;     move_and_slide()
+(defun mob-physics-process (mob delta)
+  (declare (ignore delta))
+  (character-body-3d-move-and-slide mob))
 
 ;; # This function will be called from the Main scene.
 ;; func initialize(start_position, player_position):
