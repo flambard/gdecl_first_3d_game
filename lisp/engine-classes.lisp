@@ -7,3 +7,4 @@
 
 (gdext:define-engine-class "CharacterBody3D")
 (gdext:define-engine-class "PathFollow3D")
+(gdext:define-engine-class "KinematicCollision3D")

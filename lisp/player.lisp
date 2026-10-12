@@ -11,6 +11,9 @@
 ;; @export var fall_acceleration = 75
 ;; # Vertical impulse applied to the character upon jumping in meters per second.
 ;; @export var jump_impulse = 20
+;; # Vertical impulse applied to the character upon bouncing over a mob in
+;; # meters per second.
+;; @export var bounce_impulse = 16
 ;;
 ;; var target_velocity = Vector3.ZERO
 
@@ -22,6 +25,9 @@
    (fall-acceleration 75 :export :int)
    ;; Vertical impulse applied to the character upon jumping in meters per second.
    (jump-impulse 20 :export :int)
+   ;; Vertical impulse applied to the character upon bouncing over a mob in
+   ;; meters per second.
+   (bounce-impulse 16 :export :int)
    (target-velocity (vector3))
    ;; The child node Pivot
    (pivot nil :onready "Pivot"))
@@ -60,6 +66,30 @@
 ;;     if is_on_floor() and Input.is_action_just_pressed("jump"):
 ;;         target_velocity.y = jump_impulse
 ;;
+;;     # Iterate through all collisions that occurred this frame
+;;     for index in range(get_slide_collision_count()):
+;;         # We get one of the collisions with the player
+;;         var collision = get_slide_collision(index)
+;;
+;;         # If there are duplicate collisions with a mob in a single frame
+;;         # the mob will be deleted after the first collision, and a second call to
+;;         # get_collider will return null, leading to a null pointer when calling
+;;         # collision.get_collider().is_in_group("mob").
+;;         # This block of code prevents processing duplicate collisions.
+;;         if collision.get_collider() == null:
+;;             continue
+;;
+;;         # If the collider is with a mob
+;;         if collision.get_collider().is_in_group("mob"):
+;;             var mob = collision.get_collider()
+;;             # we check that we are hitting it from above.
+;;             if Vector3.UP.dot(collision.get_normal()) > 0.1:
+;;                 # If so, we squash it and bounce.
+;;                 mob.squash()
+;;                 target_velocity.y = bounce_impulse
+;;                 # Prevent further duplicate calls.
+;;                 break
+;;
 ;;     # Moving the Character
 ;;     velocity = target_velocity
 ;;     move_and_slide()
@@ -92,6 +122,26 @@
     ;; Jumping.
     (when (and (character-body-3d-is-on-floor player) (input-is-action-just-pressed "jump"))
       (setf (vector3-y target-velocity) (float (player-jump-impulse player) 1.0)))
+    ;; Iterate through all collisions that occurred this frame
+    (dotimes (index (character-body-3d-get-slide-collision-count player))
+      ;; We get one of the collisions with the player
+      (let* ((collision (character-body-3d-get-slide-collision player index))
+             (collider (kinematic-collision-3d-get-collider collision)))
+        ;; If there are duplicate collisions with a mob in a single frame the mob
+        ;; will be deleted after the first collision, and a second call to
+        ;; get_collider will return null. This prevents processing duplicate
+        ;; collisions.
+        (when collider
+          ;; If the collider is with a mob
+          (when (node-is-in-group collider "mob")
+            ;; we check that we are hitting it from above.
+            (when (> (vector3-dot (vector3 0.0 1.0 0.0) (kinematic-collision-3d-get-normal collision))
+                     0.1)
+              ;; If so, we squash it and bounce.
+              (mob-squash collider)
+              (setf (vector3-y target-velocity) (float (player-bounce-impulse player) 1.0))
+              ;; Prevent further duplicate calls.
+              (return))))))
     ;; Moving the Character
     (character-body-3d-set-velocity player target-velocity)
     (character-body-3d-move-and-slide player)))
