@@ -1,0 +1,3 @@
+[submodule "gdecl"]
+	path = gdecl
+	url = git@github.com:flambard/gdecl.git
