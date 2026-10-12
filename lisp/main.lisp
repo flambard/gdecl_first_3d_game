@@ -1,6 +1,6 @@
 (in-package #:squash-the-creeps)
 
-;;; The Main scene's code, from "Spawning monsters"
+;;; The Main scene's code, from "Spawning monsters" and "Killing the player"
 
 ;; extends Node
 ;;
@@ -10,7 +10,8 @@
 (gdext:define-class main ("Main" "Node")
   (;; The Mob scene. A PackedScene is RefCounted, so Main keeps a reference to it.
    (mob-scene nil :export :object :class "PackedScene"))
-  (:method "_on_mob_timer_timeout" main-on-mob-timer-timeout))
+  (:method "_on_mob_timer_timeout" main-on-mob-timer-timeout)
+  (:method "_on_player_hit" main-on-player-hit))
 
 ;; func _on_mob_timer_timeout():
 ;;     # Create a new instance of the Mob scene.
@@ -39,3 +40,8 @@
       (mob-initialize mob (node-3d-get-position mob-spawn-location) player-position))
     ;; Spawn the mob by adding it to the Main scene.
     (node-add-child main mob)))
+
+;; func _on_player_hit():
+;;     $MobTimer.stop()
+(defun main-on-player-hit (main)
+  (timer-stop (node-get-node main "MobTimer")))
