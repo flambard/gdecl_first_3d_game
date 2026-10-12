@@ -1,9 +1,12 @@
 (in-package #:squash-the-creeps)
 
-;;; The Player scene's code, from "Moving the player with code" and "Jumping and
-;;; squashing monsters"
+;;; The Player scene's code, from "Moving the player with code", "Jumping and
+;;; squashing monsters" and "Killing the player"
 
 ;; extends CharacterBody3D
+;;
+;; # Emitted when the player was hit by a mob.
+;; signal hit
 ;;
 ;; # How fast the player moves in meters per second.
 ;; @export var speed = 14
@@ -31,6 +34,11 @@
    (target-velocity (vector3))
    ;; The child node Pivot
    (pivot nil :onready "Pivot"))
+  ;; Emitted when the player was hit by a mob.
+  (:signal "hit")
+  (:method "die" player-die)
+  (:method "_on_mob_detector_body_entered" player-on-mob-detector-body-entered
+           :arguments (("body" :object)))
   (:virtual "_physics_process" player-physics-process))
 
 ;; func _physics_process(delta):
@@ -145,3 +153,16 @@
     ;; Moving the Character
     (character-body-3d-set-velocity player target-velocity)
     (character-body-3d-move-and-slide player)))
+
+;; func die():
+;;     hit.emit()
+;;     queue_free()
+(defun player-die (player)
+  (object-emit-signal player "hit")
+  (node-queue-free player))
+
+;; func _on_mob_detector_body_entered(body):
+;;     die()
+(defun player-on-mob-detector-body-entered (player body)
+  (declare (ignore body))
+  (player-die player))
