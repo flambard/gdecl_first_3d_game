@@ -6,3 +6,4 @@
 ;;; and added to the package GODOT.
 
 (gdext:define-engine-class "CharacterBody3D")
+(gdext:define-engine-class "PathFollow3D")
