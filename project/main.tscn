@@ -22,7 +22,7 @@ _data = {
 }
 point_count = 4
 
-[node name="Main" type="Node"]
+[node name="Main" type="Main"]
 
 [node name="Ground" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)

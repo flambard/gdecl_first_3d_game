@@ -7,4 +7,5 @@
                  (:file "engine-classes" :depends-on ("packages"))
                  (:file "player" :depends-on ("packages" "engine-classes"))
                  (:file "mob" :depends-on ("packages" "engine-classes"))
-                 (:file "squash-the-creeps" :depends-on ("packages" "player" "mob"))))
+                 (:file "main" :depends-on ("packages" "engine-classes" "mob"))
+                 (:file "squash-the-creeps" :depends-on ("packages" "player" "mob" "main"))))
