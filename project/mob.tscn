@@ -5,7 +5,7 @@
 [sub_resource type="BoxShape3D" id="BoxShape3D_nokgg"]
 size = Vector3(1.5282, 1.06195, 2.09454)
 
-[node name="Mob" type="CharacterBody3D"]
+[node name="Mob" type="Mob"]
 
 [node name="Pivot" type="Node3D" parent="."]
 
