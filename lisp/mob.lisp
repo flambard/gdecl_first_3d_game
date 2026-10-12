@@ -16,7 +16,9 @@
    ;; Maximum speed of the mob in meters per second.
    (max-speed 18 :export :int))
   (:method "initialize" mob-initialize
-           :arguments (("start_position" :vector3) ("player_position" :vector3))))
+           :arguments (("start_position" :vector3) ("player_position" :vector3)))
+  (:method "_on_visible_on_screen_notifier_3d_screen_exited"
+           mob-on-visible-on-screen-notifier-3d-screen-exited))
 
 ;; # This function will be called from the Main scene.
 ;; func initialize(start_position, player_position):
@@ -50,3 +52,8 @@
     (setf velocity (vector3-rotated velocity (vector3 0.0 1.0 0.0)
                                     (vector3-y (node-3d-get-rotation mob))))
     (character-body-3d-set-velocity mob velocity)))
+
+;; func _on_visible_on_screen_notifier_3d_screen_exited():
+;;     queue_free()
+(defun mob-on-visible-on-screen-notifier-3d-screen-exited (mob)
+  (node-queue-free mob))
