@@ -21,11 +21,14 @@
    (max-speed :initform 18 :export :int :reader mob-max-speed))
   (:metaclass godot-class)
   ;; Emitted when the player jumped on the mob.
-  (:signals (squashed)))
+  (:signals (squashed))
+  ;; _physics_process runs every physics frame, so Godot calls the plain
+  ;; function, without generic dispatch
+  (:direct-functions (physics-process mob-physics-process)))
 
 ;; func _physics_process(_delta):
 ;;     move_and_slide()
-(defmethod physics-process ((mob mob) delta)
+(defun mob-physics-process (mob delta)
   (declare (ignore delta))
   (character-body-3d-move-and-slide mob))
 

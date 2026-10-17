@@ -36,7 +36,10 @@
    (pivot :onready "Pivot" :reader player-pivot))
   (:metaclass godot-class)
   ;; Emitted when the player was hit by a mob.
-  (:signals (hit)))
+  (:signals (hit))
+  ;; _physics_process runs every physics frame, so Godot calls the plain
+  ;; function, without generic dispatch
+  (:direct-functions (physics-process player-physics-process)))
 
 ;; func _physics_process(delta):
 ;;     # We create a local variable to store the input direction.
@@ -98,7 +101,7 @@
 ;;     # Moving the Character
 ;;     velocity = target_velocity
 ;;     move_and_slide()
-(defmethod physics-process ((player player) delta)
+(defun player-physics-process (player delta)
   (let ((direction (vector3))           ; The input direction
         (target-velocity (player-target-velocity player)))
     ;; We check for each move input and update the direction accordingly.
