@@ -2,6 +2,8 @@
 
 The game from Godot's tutorial [Your first 3D game](https://docs.godotengine.org/en/stable/getting_started/first_3d_game/index.html), written in Common Lisp instead of GDScript. The Lisp code runs in [Embeddable Common Lisp](https://ecl.common-lisp.dev) (ECL) inside Godot, through [gdecl](https://github.com/flambard/gdecl), a framework for programming Godot with Common Lisp.
 
+The game's classes are CLOS classes, with gdecl's `godot-clos`: each is a `defclass` with the metaclass `godot-class`, and its methods, such as `_physics_process` and the signal handlers, are `defmethod`s of generic functions.
+
 This is a work in progress that follows the tutorial step by step. gdecl is a proof of concept, and it is improved along the way with what the game needs.
 
 ## Requirements

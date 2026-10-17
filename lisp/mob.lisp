@@ -13,24 +13,19 @@
 ;; # Emitted when the player jumped on the mob.
 ;; signal squashed
 
-;; The Lisp object of a Mob is a MOB
-(gdext:define-class mob ("Mob" "CharacterBody3D")
+;; The class Mob in Godot, whose instances' Lisp objects are MOBs
+(defclass mob (character-body-3d)
   (;; Minimum speed of the mob in meters per second.
-   (min-speed 10 :export :int)
+   (min-speed :initform 10 :export :int :reader mob-min-speed)
    ;; Maximum speed of the mob in meters per second.
-   (max-speed 18 :export :int))
+   (max-speed :initform 18 :export :int :reader mob-max-speed))
+  (:metaclass godot-class)
   ;; Emitted when the player jumped on the mob.
-  (:signal "squashed")
-  (:method "squash" mob-squash)
-  (:method "initialize" mob-initialize
-           :arguments (("start_position" :vector3) ("player_position" :vector3)))
-  (:method "_on_visible_on_screen_notifier_3d_screen_exited"
-           mob-on-visible-on-screen-notifier-3d-screen-exited)
-  (:virtual "_physics_process" mob-physics-process))
+  (:signals (squashed)))
 
 ;; func _physics_process(_delta):
 ;;     move_and_slide()
-(defun mob-physics-process (mob delta)
+(defmethod physics-process ((mob mob) delta)
   (declare (ignore delta))
   (character-body-3d-move-and-slide mob))
 
@@ -50,7 +45,9 @@
 ;;     # We then rotate the velocity vector based on the mob's Y rotation
 ;;     # in order to move in the direction the mob is looking.
 ;;     velocity = velocity.rotated(Vector3.UP, rotation.y)
-(defun mob-initialize (mob start-position player-position)
+(define-godot-generic initialize (self (start-position :vector3) (player-position :vector3)))
+
+(defmethod initialize ((mob mob) start-position player-position)
   ;; We position the mob by placing it at start_position
   ;; and rotate it towards player_position, so it looks at the player.
   (node-3d-look-at-from-position mob start-position player-position (vector3 0.0 1.0 0.0))
@@ -69,11 +66,17 @@
 
 ;; func _on_visible_on_screen_notifier_3d_screen_exited():
 ;;     queue_free()
-(defun mob-on-visible-on-screen-notifier-3d-screen-exited (mob)
+(define-godot-generic on-visible-on-screen-notifier-3d-screen-exited (self)
+  (:godot-name "_on_visible_on_screen_notifier_3d_screen_exited"))
+
+(defmethod on-visible-on-screen-notifier-3d-screen-exited ((mob mob))
   (node-queue-free mob))
+
 ;; func squash():
 ;;     squashed.emit()
 ;;     queue_free()
-(defun mob-squash (mob)
+(define-godot-generic squash (self))
+
+(defmethod squash ((mob mob))
   (object-emit-signal mob "squashed")
   (node-queue-free mob))

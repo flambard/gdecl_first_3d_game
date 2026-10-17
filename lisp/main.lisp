@@ -6,12 +6,11 @@
 ;;
 ;; @export var mob_scene: PackedScene
 
-;; The Lisp object of a Main is a MAIN
-(gdext:define-class main ("Main" "Node")
+;; The class Main in Godot, whose instances' Lisp objects are MAINs
+(defclass main (node)
   (;; The Mob scene. A PackedScene is RefCounted, so Main keeps a reference to it.
-   (mob-scene nil :export :object :class "PackedScene"))
-  (:method "_on_mob_timer_timeout" main-on-mob-timer-timeout)
-  (:method "_on_player_hit" main-on-player-hit))
+   (mob-scene :initform nil :export :object :class "PackedScene" :reader main-mob-scene))
+  (:metaclass godot-class))
 
 ;; func _on_mob_timer_timeout():
 ;;     # Create a new instance of the Mob scene.
@@ -28,7 +27,10 @@
 ;;
 ;;     # Spawn the mob by adding it to the Main scene.
 ;;     add_child(mob)
-(defun main-on-mob-timer-timeout (main)
+(define-godot-generic on-mob-timer-timeout (self)
+  (:godot-name "_on_mob_timer_timeout"))
+
+(defmethod on-mob-timer-timeout ((main main))
   (let (;; Create a new instance of the Mob scene.
         (mob (packed-scene-instantiate (main-mob-scene main)))
         ;; Choose a random location on the SpawnPath.
@@ -37,11 +39,14 @@
     ;; And give it a random offset.
     (path-follow-3d-set-progress-ratio mob-spawn-location (randf))
     (let ((player-position (node-3d-get-position (node-get-node main "Player"))))
-      (mob-initialize mob (node-3d-get-position mob-spawn-location) player-position))
+      (initialize mob (node-3d-get-position mob-spawn-location) player-position))
     ;; Spawn the mob by adding it to the Main scene.
     (node-add-child main mob)))
 
 ;; func _on_player_hit():
 ;;     $MobTimer.stop()
-(defun main-on-player-hit (main)
+(define-godot-generic on-player-hit (self)
+  (:godot-name "_on_player_hit"))
+
+(defmethod on-player-hit ((main main))
   (timer-stop (node-get-node main "MobTimer")))

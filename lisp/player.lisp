@@ -20,26 +20,23 @@
 ;;
 ;; var target_velocity = Vector3.ZERO
 
-;; The Lisp object of a Player is a PLAYER
-(gdext:define-class player ("Player" "CharacterBody3D")
+;; The class Player in Godot, whose instances' Lisp objects are PLAYERs
+(defclass player (character-body-3d)
   (;; How fast the player moves in meters per second.
-   (speed 14 :export :int)
+   (speed :initform 14 :export :int :reader player-speed)
    ;; The downward acceleration when in the air, in meters per second squared.
-   (fall-acceleration 75 :export :int)
+   (fall-acceleration :initform 75 :export :int :reader player-fall-acceleration)
    ;; Vertical impulse applied to the character upon jumping in meters per second.
-   (jump-impulse 20 :export :int)
+   (jump-impulse :initform 20 :export :int :reader player-jump-impulse)
    ;; Vertical impulse applied to the character upon bouncing over a mob in
    ;; meters per second.
-   (bounce-impulse 16 :export :int)
-   (target-velocity (vector3))
+   (bounce-impulse :initform 16 :export :int :reader player-bounce-impulse)
+   (target-velocity :initform (vector3) :reader player-target-velocity)
    ;; The child node Pivot
-   (pivot nil :onready "Pivot"))
+   (pivot :onready "Pivot" :reader player-pivot))
+  (:metaclass godot-class)
   ;; Emitted when the player was hit by a mob.
-  (:signal "hit")
-  (:method "die" player-die)
-  (:method "_on_mob_detector_body_entered" player-on-mob-detector-body-entered
-           :arguments (("body" :object)))
-  (:virtual "_physics_process" player-physics-process))
+  (:signals (hit)))
 
 ;; func _physics_process(delta):
 ;;     # We create a local variable to store the input direction.
@@ -101,7 +98,7 @@
 ;;     # Moving the Character
 ;;     velocity = target_velocity
 ;;     move_and_slide()
-(defun player-physics-process (player delta)
+(defmethod physics-process ((player player) delta)
   (let ((direction (vector3))           ; The input direction
         (target-velocity (player-target-velocity player)))
     ;; We check for each move input and update the direction accordingly.
@@ -146,7 +143,7 @@
             (when (> (vector3-dot (vector3 0.0 1.0 0.0) (kinematic-collision-3d-get-normal collision))
                      0.1)
               ;; If so, we squash it and bounce.
-              (mob-squash collider)
+              (squash collider)
               (setf (vector3-y target-velocity) (float (player-bounce-impulse player) 1.0))
               ;; Prevent further duplicate calls.
               (return))))))
@@ -157,12 +154,17 @@
 ;; func die():
 ;;     hit.emit()
 ;;     queue_free()
-(defun player-die (player)
+(define-godot-generic die (self))
+
+(defmethod die ((player player))
   (object-emit-signal player "hit")
   (node-queue-free player))
 
 ;; func _on_mob_detector_body_entered(body):
 ;;     die()
-(defun player-on-mob-detector-body-entered (player body)
+(define-godot-generic on-mob-detector-body-entered (self (body :object))
+  (:godot-name "_on_mob_detector_body_entered"))
+
+(defmethod on-mob-detector-body-entered ((player player) body)
   (declare (ignore body))
-  (player-die player))
+  (die player))
