@@ -1,6 +1,7 @@
 (in-package #:squash-the-creeps)
 
-;;; The Main scene's code, from "Spawning monsters" and "Killing the player"
+;;; The Main scene's code, from "Spawning monsters", "Killing the player" and
+;;; "Score and replay"
 
 ;; extends Node
 ;;
@@ -11,6 +12,11 @@
   (;; The Mob scene. A PackedScene is RefCounted, so Main keeps a reference to it.
    (mob-scene :initform nil :export :object :class "PackedScene" :reader main-mob-scene))
   (:metaclass godot-class))
+
+;; func _ready():
+;;     $UserInterface/Retry.hide()
+(defmethod ready ((main main))
+  (canvas-item-hide (node-get-node main "UserInterface/Retry")))
 
 ;; func _on_mob_timer_timeout():
 ;;     # Create a new instance of the Mob scene.
@@ -27,6 +33,9 @@
 ;;
 ;;     # Spawn the mob by adding it to the Main scene.
 ;;     add_child(mob)
+;;
+;;     # We connect the mob to the score label to update the score upon squashing one.
+;;     mob.squashed.connect($UserInterface/ScoreLabel._on_mob_squashed.bind())
 (define-godot-generic on-mob-timer-timeout (self)
   (:godot-name "_on_mob_timer_timeout"))
 
@@ -41,12 +50,29 @@
     (let ((player-position (node-3d-get-position (node-get-node main "Player"))))
       (initialize mob (node-3d-get-position mob-spawn-location) player-position))
     ;; Spawn the mob by adding it to the Main scene.
-    (node-add-child main mob)))
+    (node-add-child main mob)
+    ;; We connect the mob to the score label to update the score upon squashing
+    ;; one.
+    (let ((score-label (node-get-node main "UserInterface/ScoreLabel")))
+      (gdext:connect-signal mob "squashed" (lambda () (on-mob-squashed score-label))
+                            :target score-label))))
 
 ;; func _on_player_hit():
 ;;     $MobTimer.stop()
+;;     $UserInterface/Retry.show()
 (define-godot-generic on-player-hit (self)
   (:godot-name "_on_player_hit"))
 
 (defmethod on-player-hit ((main main))
-  (timer-stop (node-get-node main "MobTimer")))
+  (timer-stop (node-get-node main "MobTimer"))
+  (canvas-item-show (node-get-node main "UserInterface/Retry")))
+
+;; func _unhandled_input(event):
+;;     if event.is_action_pressed("ui_accept") and $UserInterface/Retry.visible:
+;;         # This restarts the current scene.
+;;         get_tree().reload_current_scene()
+(defmethod unhandled-input ((main main) event)
+  (when (and (input-event-is-action-pressed event "ui_accept")
+             (canvas-item-is-visible (node-get-node main "UserInterface/Retry")))
+    ;; This restarts the current scene.
+    (scene-tree-reload-current-scene (node-get-tree main))))

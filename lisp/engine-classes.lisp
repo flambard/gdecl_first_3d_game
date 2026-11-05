@@ -9,3 +9,5 @@
 (define-engine-class "CharacterBody3D")
 (define-engine-class "PathFollow3D")
 (define-engine-class "KinematicCollision3D")
+(define-engine-class "Label")
+(define-engine-class "InputEvent")

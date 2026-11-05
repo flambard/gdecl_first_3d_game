@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://bc14ccmvkbidf"]
+[gd_scene format=3 uid="uid://bc14ccmvkbidf"]
 
 [ext_resource type="PackedScene" uid="uid://d4dwb3d60jch2" path="res://mob.tscn" id="1_0xm2m"]
 [ext_resource type="PackedScene" uid="uid://bbd7hdxkh0u1u" path="res://player.tscn" id="1_ig7tw"]
+[ext_resource type="FontFile" uid="uid://cyxhh7ddkn62q" path="res://fonts/Montserrat-Medium.ttf" id="3_font"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_7dm0k"]
 size = Vector3(60, 2, 60)
@@ -23,62 +24,109 @@ _data = {
 }
 point_count = 4
 
-[node name="Main" type="Main"]
+[sub_resource type="Theme" id="Theme_ui"]
+default_font = ExtResource("3_font")
+default_font_size = 22
+
+[node name="Main" type="Main" unique_id=270210913]
 mob_scene = ExtResource("1_0xm2m")
 
-[node name="Ground" type="StaticBody3D" parent="."]
+[node name="Ground" type="StaticBody3D" parent="." unique_id=1283981514]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
 collision_layer = 4
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground" unique_id=1097901243]
 shape = SubResource("BoxShape3D_7dm0k")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground" unique_id=504077590]
 mesh = SubResource("BoxMesh_7dm0k")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=451812748]
 transform = Transform3D(1, 0, 0, 0, 0.258819, 0.965926, 0, -0.965926, 0.258819, 0, 14, 0)
 shadow_enabled = true
 
-[node name="Player" parent="." instance=ExtResource("1_ig7tw")]
+[node name="Player" parent="." unique_id=1614058762 instance=ExtResource("1_ig7tw")]
 
-[node name="CameraPivot" type="Marker3D" parent="."]
+[node name="CameraPivot" type="Marker3D" parent="." unique_id=2075319889]
 transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0, 0)
 
-[node name="Camera3D" type="Camera3D" parent="CameraPivot"]
+[node name="Camera3D" type="Camera3D" parent="CameraPivot" unique_id=1870577881]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 19)
 projection = 1
 size = 19.0
 
-[node name="Cylinders" type="Node3D" parent="."]
+[node name="Cylinders" type="Node3D" parent="." unique_id=1318319461]
 transform = Transform3D(0.258819, -0.965926, 0, -4.2222e-08, -1.13133e-08, 1, -0.965926, -0.258819, -4.37114e-08, -13, 0, -14)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Cylinders"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Cylinders" unique_id=1955984205]
 transform = Transform3D(0.981039, 0.010586, -0.193524, 0.193599, -0.00659412, 0.981059, 0.00910939, -0.999922, -0.00851857, 0, 0, 0)
 mesh = SubResource("CylinderMesh_ig7tw")
 
-[node name="MeshInstance3D4" type="MeshInstance3D" parent="Cylinders"]
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="Cylinders" unique_id=2062879835]
 transform = Transform3D(0.965926, 1.11866e-07, -0.258819, 0.258819, -1.83062e-08, 0.965926, 7.35137e-08, -1, -5.71231e-08, 6.47048, -24.1481, 0)
 mesh = SubResource("CylinderMesh_ig7tw")
 
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="Cylinders"]
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Cylinders" unique_id=2018182748]
 transform = Transform3D(-0.492072, -0.0625, -0.868308, 0.870513, -0.0255657, -0.491481, 0.00851848, -0.997717, 0.0669872, -28.9778, -7.76457, -1.31134e-06)
 mesh = SubResource("CylinderMesh_ig7tw")
 
-[node name="MeshInstance3D3" type="MeshInstance3D" parent="Cylinders"]
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="Cylinders" unique_id=1924540408]
 transform = Transform3D(-0.492072, -0.0625001, -0.868308, 0.870513, -0.0255657, -0.491481, 0.00851852, -0.997717, 0.0669873, -21.9897, -33.8445, -1.31134e-06)
 mesh = SubResource("CylinderMesh_ig7tw")
 
-[node name="SpawnPath" type="Path3D" parent="."]
+[node name="SpawnPath" type="Path3D" parent="." unique_id=1084861542]
 curve = SubResource("Curve3D_ig7tw")
 
-[node name="SpawnLocation" type="PathFollow3D" parent="SpawnPath"]
-transform = Transform3D(-0.00696157, 0, -0.999976, 0, 1, 0, 0.999976, 0, -0.00696157, -12.8359, 0, -14.1729)
+[node name="SpawnLocation" type="PathFollow3D" parent="SpawnPath" unique_id=780863690]
+transform = Transform3D(-0.0069615734, 0, -0.999976, 0, 1, 0, 0.999976, 0, -0.0069615734, -12.8359, 0, -14.1729)
 
-[node name="MobTimer" type="Timer" parent="."]
+[node name="MobTimer" type="Timer" parent="." unique_id=633558864]
 wait_time = 0.5
 autostart = true
+
+[node name="UserInterface" type="Control" parent="." unique_id=713119991]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = SubResource("Theme_ui")
+
+[node name="ScoreLabel" type="ScoreLabel" parent="UserInterface" unique_id=35161947]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 130.0
+offset_bottom = 52.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "Score: 0"
+
+[node name="Retry" type="ColorRect" parent="UserInterface" unique_id=1273043040]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.470588)
+
+[node name="Label" type="Label" parent="UserInterface/Retry" unique_id=1619032210]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -105.0
+offset_top = -14.0
+offset_right = 105.0
+offset_bottom = 14.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "Press Enter to retry."
+horizontal_alignment = 1
 
 [connection signal="hit" from="Player" to="." method="_on_player_hit"]
 [connection signal="timeout" from="MobTimer" to="." method="_on_mob_timer_timeout"]
