@@ -6,6 +6,6 @@
 ;;; and added to the package GODOT, with a struct for each class, such as
 ;;; CHARACTER-BODY-3D, which the game's classes inherit from.
 
-(gdext:define-engine-class "CharacterBody3D")
-(gdext:define-engine-class "PathFollow3D")
-(gdext:define-engine-class "KinematicCollision3D")
+(define-engine-class "CharacterBody3D")
+(define-engine-class "PathFollow3D")
+(define-engine-class "KinematicCollision3D")
