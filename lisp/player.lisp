@@ -1,7 +1,7 @@
 (in-package #:squash-the-creeps)
 
 ;;; The Player scene's code, from "Moving the player with code", "Jumping and
-;;; squashing monsters" and "Killing the player"
+;;; squashing monsters", "Killing the player" and "Character animation"
 
 ;; extends CharacterBody3D
 ;;
@@ -33,7 +33,9 @@
    (bounce-impulse :initform 16 :export :int :reader player-bounce-impulse)
    (target-velocity :initform (vector3) :reader player-target-velocity)
    ;; The child node Pivot
-   (pivot :onready "Pivot" :reader player-pivot))
+   (pivot :onready "Pivot" :reader player-pivot)
+   ;; The child node AnimationPlayer
+   (animation-player :onready "AnimationPlayer" :reader player-animation-player))
   (:metaclass godot-class)
   ;; Emitted when the player was hit by a mob.
   (:signals (hit))
@@ -61,6 +63,9 @@
 ;;         direction = direction.normalized()
 ;;         # Setting the basis property will affect the rotation of the node.
 ;;         $Pivot.basis = Basis.looking_at(direction)
+;;         $AnimationPlayer.speed_scale = 4
+;;     else:
+;;         $AnimationPlayer.speed_scale = 1
 ;;
 ;;     # Ground Velocity
 ;;     target_velocity.x = direction.x * speed
@@ -101,6 +106,8 @@
 ;;     # Moving the Character
 ;;     velocity = target_velocity
 ;;     move_and_slide()
+;;
+;;     $Pivot.rotation.x = PI / 6 * velocity.y / jump_impulse
 (defun player-physics-process (player delta)
   (let ((direction (vector3))           ; The input direction
         (target-velocity (player-target-velocity player)))
@@ -115,10 +122,13 @@
       (incf (vector3-z direction)))
     (when (input-is-action-pressed "move_forward")
       (decf (vector3-z direction)))
-    (unless (equalp direction (vector3))
-      (setf direction (vector3-normalized direction))
-      ;; Setting the basis property will affect the rotation of the node.
-      (node-3d-set-basis (player-pivot player) (basis-looking-at direction)))
+    (cond ((equalp direction (vector3))
+           (animation-player-set-speed-scale (player-animation-player player) 1.0))
+          (t
+           (setf direction (vector3-normalized direction))
+           ;; Setting the basis property will affect the rotation of the node.
+           (node-3d-set-basis (player-pivot player) (basis-looking-at direction))
+           (animation-player-set-speed-scale (player-animation-player player) 4.0)))
     ;; Ground Velocity
     (setf (vector3-x target-velocity) (* (vector3-x direction) (player-speed player))
           (vector3-z target-velocity) (* (vector3-z direction) (player-speed player)))
@@ -152,7 +162,14 @@
               (return))))))
     ;; Moving the Character
     (character-body-3d-set-velocity player target-velocity)
-    (character-body-3d-move-and-slide player)))
+    (character-body-3d-move-and-slide player)
+    ;; Tilt the Pivot with the vertical velocity, an arc during jumps
+    (let ((rotation (node-3d-get-rotation (player-pivot player))))
+      (setf (vector3-x rotation)
+            (float (/ (* (/ pi 6) (vector3-y (character-body-3d-get-velocity player)))
+                      (player-jump-impulse player))
+                   1.0))
+      (node-3d-set-rotation (player-pivot player) rotation))))
 
 ;; func die():
 ;;     hit.emit()

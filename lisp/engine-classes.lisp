@@ -11,3 +11,4 @@
 (define-engine-class "KinematicCollision3D")
 (define-engine-class "Label")
 (define-engine-class "InputEvent")
+(define-engine-class "AnimationPlayer")

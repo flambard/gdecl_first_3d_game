@@ -1,7 +1,7 @@
 (in-package #:squash-the-creeps)
 
-;;; The Mob scene's code, from "Spawning monsters" and "Jumping and squashing
-;;; monsters"
+;;; The Mob scene's code, from "Spawning monsters", "Jumping and squashing
+;;; monsters" and "Character animation"
 
 ;; extends CharacterBody3D
 ;;
@@ -48,6 +48,8 @@
 ;;     # We then rotate the velocity vector based on the mob's Y rotation
 ;;     # in order to move in the direction the mob is looking.
 ;;     velocity = velocity.rotated(Vector3.UP, rotation.y)
+;;
+;;     $AnimationPlayer.speed_scale = random_speed / min_speed
 (define-godot-generic initialize (self (start-position :vector3) (player-position :vector3)))
 
 (defmethod initialize ((mob mob) start-position player-position)
@@ -65,7 +67,10 @@
     ;; in order to move in the direction the mob is looking.
     (setf velocity (vector3-rotated velocity (vector3 0.0 1.0 0.0)
                                     (vector3-y (node-3d-get-rotation mob))))
-    (character-body-3d-set-velocity mob velocity)))
+    (character-body-3d-set-velocity mob velocity)
+    ;; The faster the mob, the faster its animation
+    (animation-player-set-speed-scale (node-get-node mob "AnimationPlayer")
+                                      (/ random-speed (mob-min-speed mob)))))
 
 ;; func _on_visible_on_screen_notifier_3d_screen_exited():
 ;;     queue_free()
