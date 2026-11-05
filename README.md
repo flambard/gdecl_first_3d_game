@@ -34,6 +34,8 @@ godot --path project --editor
 
 Run `make` again after changing the Lisp code, and restart Godot to load the new library.
 
+`make run` builds and runs the game with gdecl's eval server, so `gdecl/bin/gdecl-eval '(forms)'` evaluates Lisp in the running game (see "Evaluating Lisp in a running application" in gdecl's README).
+
 ## Layout
 
 ```
