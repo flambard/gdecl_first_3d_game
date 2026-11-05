@@ -30,7 +30,7 @@
 ;;     move_and_slide()
 (defun mob-physics-process (mob delta)
   (declare (ignore delta))
-  (character-body-3d-move-and-slide mob))
+  (move-and-slide mob))
 
 ;; # This function will be called from the Main scene.
 ;; func initialize(start_position, player_position):
@@ -55,10 +55,10 @@
 (defmethod initialize ((mob mob) start-position player-position)
   ;; We position the mob by placing it at start_position
   ;; and rotate it towards player_position, so it looks at the player.
-  (node-3d-look-at-from-position mob start-position player-position (vector3 0.0 1.0 0.0))
+  (look-at-from-position mob start-position player-position (vector3 0.0 1.0 0.0))
   ;; Rotate this mob randomly within range of -45 and +45 degrees,
   ;; so that it doesn't move directly towards the player.
-  (node-3d-rotate-y mob (randf-range (- (/ pi 4)) (/ pi 4)))
+  (rotate-y mob (randf-range (- (/ pi 4)) (/ pi 4)))
   (let* (;; We calculate a random speed (float)
          (random-speed (randf-range (mob-min-speed mob) (mob-max-speed mob)))
          ;; We calculate a forward velocity that represents the speed.
@@ -66,19 +66,17 @@
     ;; We then rotate the velocity vector based on the mob's Y rotation
     ;; in order to move in the direction the mob is looking.
     (setf velocity (vector3-rotated velocity (vector3 0.0 1.0 0.0)
-                                    (vector3-y (node-3d-get-rotation mob))))
-    (character-body-3d-set-velocity mob velocity)
+                                    (vector3-y (rotation mob))))
+    (setf (velocity mob) velocity)
     ;; The faster the mob, the faster its animation
-    (animation-player-set-speed-scale (node-get-node mob "AnimationPlayer")
-                                      (/ random-speed (mob-min-speed mob)))))
+    (setf (speed-scale ($ mob "AnimationPlayer")) (/ random-speed (mob-min-speed mob)))))
 
 ;; func _on_visible_on_screen_notifier_3d_screen_exited():
 ;;     queue_free()
-(define-godot-generic on-visible-on-screen-notifier-3d-screen-exited (self)
-  (:godot-name "_on_visible_on_screen_notifier_3d_screen_exited"))
+(define-godot-generic on-visible-on-screen-notifier-3d-screen-exited (self))
 
 (defmethod on-visible-on-screen-notifier-3d-screen-exited ((mob mob))
-  (node-queue-free mob))
+  (queue-free mob))
 
 ;; func squash():
 ;;     squashed.emit()
@@ -86,5 +84,5 @@
 (define-godot-generic squash (self))
 
 (defmethod squash ((mob mob))
-  (object-emit-signal mob "squashed")
-  (node-queue-free mob))
+  (emit-signal mob 'squashed)
+  (queue-free mob))

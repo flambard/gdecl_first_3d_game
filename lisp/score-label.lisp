@@ -17,4 +17,4 @@
 ;;     text = "Score: %s" % score
 (defun on-mob-squashed (score-label)
   (incf (score-label-score score-label))
-  (label-set-text score-label (format nil "Score: ~d" (score-label-score score-label))))
+  (setf (text score-label) (format nil "Score: ~d" (score-label-score score-label))))

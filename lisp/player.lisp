@@ -123,37 +123,38 @@
     (when (input-is-action-pressed "move_forward")
       (decf (vector3-z direction)))
     (cond ((equalp direction (vector3))
-           (animation-player-set-speed-scale (player-animation-player player) 1.0))
+           (setf (speed-scale (player-animation-player player)) 1.0))
           (t
            (setf direction (vector3-normalized direction))
            ;; Setting the basis property will affect the rotation of the node.
+           ;; Prefixed, as BASIS is the builtin type's constructor
            (node-3d-set-basis (player-pivot player) (basis-looking-at direction))
-           (animation-player-set-speed-scale (player-animation-player player) 4.0)))
+           (setf (speed-scale (player-animation-player player)) 4.0)))
     ;; Ground Velocity
     (setf (vector3-x target-velocity) (* (vector3-x direction) (player-speed player))
           (vector3-z target-velocity) (* (vector3-z direction) (player-speed player)))
     ;; Vertical Velocity
-    (unless (character-body-3d-is-on-floor player) ; If in the air, fall towards the floor. Literally gravity
+    (unless (is-on-floor player) ; If in the air, fall towards the floor. Literally gravity
       (setf (vector3-y target-velocity)
             (float (- (vector3-y target-velocity) (* (player-fall-acceleration player) delta))
                    1.0)))
     ;; Jumping.
-    (when (and (character-body-3d-is-on-floor player) (input-is-action-just-pressed "jump"))
+    (when (and (is-on-floor player) (input-is-action-just-pressed "jump"))
       (setf (vector3-y target-velocity) (float (player-jump-impulse player) 1.0)))
     ;; Iterate through all collisions that occurred this frame
-    (dotimes (index (character-body-3d-get-slide-collision-count player))
+    (dotimes (index (get-slide-collision-count player))
       ;; We get one of the collisions with the player
-      (let* ((collision (character-body-3d-get-slide-collision player index))
-             (collider (kinematic-collision-3d-get-collider collision)))
+      (let* ((collision (get-slide-collision player index))
+             (collider (get-collider collision)))
         ;; If there are duplicate collisions with a mob in a single frame the mob
         ;; will be deleted after the first collision, and a second call to
         ;; get_collider will return null. This prevents processing duplicate
         ;; collisions.
         (when collider
           ;; If the collider is with a mob
-          (when (node-is-in-group collider "mob")
+          (when (is-in-group collider "mob")
             ;; we check that we are hitting it from above.
-            (when (> (vector3-dot (vector3 0.0 1.0 0.0) (kinematic-collision-3d-get-normal collision))
+            (when (> (vector3-dot (vector3 0.0 1.0 0.0) (get-normal collision))
                      0.1)
               ;; If so, we squash it and bounce.
               (squash collider)
@@ -161,15 +162,15 @@
               ;; Prevent further duplicate calls.
               (return))))))
     ;; Moving the Character
-    (character-body-3d-set-velocity player target-velocity)
-    (character-body-3d-move-and-slide player)
+    (setf (velocity player) target-velocity)
+    (move-and-slide player)
     ;; Tilt the Pivot with the vertical velocity, an arc during jumps
-    (let ((rotation (node-3d-get-rotation (player-pivot player))))
+    (let ((rotation (rotation (player-pivot player))))
       (setf (vector3-x rotation)
-            (float (/ (* (/ pi 6) (vector3-y (character-body-3d-get-velocity player)))
+            (float (/ (* (/ pi 6) (vector3-y (velocity player)))
                       (player-jump-impulse player))
                    1.0))
-      (node-3d-set-rotation (player-pivot player) rotation))))
+      (setf (rotation (player-pivot player)) rotation))))
 
 ;; func die():
 ;;     hit.emit()
@@ -177,13 +178,12 @@
 (define-godot-generic die (self))
 
 (defmethod die ((player player))
-  (object-emit-signal player "hit")
-  (node-queue-free player))
+  (emit-signal player 'hit)
+  (queue-free player))
 
 ;; func _on_mob_detector_body_entered(body):
 ;;     die()
-(define-godot-generic on-mob-detector-body-entered (self (body :object))
-  (:godot-name "_on_mob_detector_body_entered"))
+(define-godot-generic on-mob-detector-body-entered (self (body :object)))
 
 (defmethod on-mob-detector-body-entered ((player player) body)
   (declare (ignore body))
